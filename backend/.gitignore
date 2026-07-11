@@ -1,0 +1,4 @@
+# Dependencias y entorno virtual
+.venv/
+
+.env
