@@ -17,19 +17,22 @@ app = FastAPI()
 # Ajusta esto con el dominio real de tu frontend en Vercel cuando lo tengas
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # en producción: ["https://tu-app.vercel.app"]
+    allow_origins=["https://tutoriapp-videollamadas.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 class RoomRequest(BaseModel):
     sessionId: str
     tutorId: str
     studentId: str
 
+
 def verificar_clave(x_internal_key: str):
     if x_internal_key != INTERNAL_API_KEY:
         raise HTTPException(status_code=401, detail="No autorizado")
+
 
 def generar_token(room_name: str, identity: str, name: str) -> str:
     token = api.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
@@ -38,9 +41,11 @@ def generar_token(room_name: str, identity: str, name: str) -> str:
     )
     return token.to_jwt()
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.post("/rooms/create")
 def crear_sala(req: RoomRequest, x_internal_key: str = Header(None)):
