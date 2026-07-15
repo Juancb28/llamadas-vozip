@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -62,3 +62,17 @@ def crear_sala(req: RoomRequest, x_internal_key: str = Header(None)):
         "tutorToken": tutor_token,
         "studentToken": student_token,
     }
+
+from livekit.api import WebhookReceiver, TokenVerifier
+
+webhook_receiver = WebhookReceiver(TokenVerifier(LIVEKIT_API_KEY, LIVEKIT_API_SECRET))
+
+@app.post("/webhook")
+async def livekit_webhook(request: Request, authorization: str = Header(None)):
+    body = await request.body()
+    try:
+        event = webhook_receiver.receive(body.decode("utf-8"), authorization)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Firma inválida")
+    # procesar event.event, event.room, etc.
+    return {"status": "ok"}
